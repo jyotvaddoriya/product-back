@@ -40,13 +40,13 @@ app.post("/login", async (req, resp) => {
     }
 });
 
-app.post("/add-product",verifytoken, async (req, resp) => {
+app.post("/add-product", verifytoken, async (req, resp) => {
     let product = new Product(req.body);
     let result = await product.save();
     resp.send(result)
 });
 
-app.get("/products",verifytoken, async (req, resp) => {
+app.get("/products", verifytoken, async (req, resp) => {
     try {
         let products = await Product.find();
         if (products.length > 0) {
@@ -54,18 +54,17 @@ app.get("/products",verifytoken, async (req, resp) => {
         } else {
             resp.send({ result: "No Result found" })
         }
-    }catch(error){
+    } catch (error) {
         resp.status(500).send({ result: "Internal server error" });
-    }
-  
+    }   
 });
 
-app.delete("/product/:id",verifytoken, async (req, resp) => {
+app.delete("/product/:id", verifytoken, async (req, resp) => {
     const result = await Product.deleteOne({ _id: req.params.id })
     resp.send(result);
 });
 
-app.get("/product/:id",verifytoken, async (req, resp) => {
+app.get("/product/:id", verifytoken, async (req, resp) => {
     let result = await Product.findOne({ _id: req.params.id })
     if (result) {
         resp.send(result)
@@ -74,7 +73,7 @@ app.get("/product/:id",verifytoken, async (req, resp) => {
     }
 })
 
-app.put("/product/:id",verifytoken, async (req, resp) => {
+app.put("/product/:id", verifytoken, async (req, resp) => {
     let result = await Product.updateOne(
         { _id: req.params.id.trim() },
         {
@@ -89,10 +88,10 @@ app.get("/search/:key", verifytoken, async (req, resp) => {
         const result = await Product.find({
             "$or": [
                 { name: { $regex: req.params.key, $options: "i" } }, // Case-insensitive
-                { type: { $regex: req.params.key, $options: "i" } }
+                { type: { $regex: req.params.key, $options: "i" } },
+                { price: { $regex: req.params.key, $options: "i" } }
             ]
-        });
-
+        }); 
         if (result.length > 0) {
             resp.send(result);
         } else {
@@ -104,23 +103,21 @@ app.get("/search/:key", verifytoken, async (req, resp) => {
     }
 });
 
-
-function verifytoken(req,resp,next){
+function verifytoken(req, resp, next) {
     let token = req.headers['authorization'];
-    if(token){
-            token =token.split(' ')[1]  ; 
-            console.warn("middle ware call",token)
-            jwt.verify(token,jwtkey,(err,valid) => {
-                if(err){
-                    resp.send({result : "please provide valid token with header"})
-                }else{
-                    next();
-                }
-            })  
-    }else{
-        resp.send({result : "please add token with header"})
+    if (token) {
+        token = token.split(' ')[1];
+        console.warn("middle ware call", token)
+        jwt.verify(token, jwtkey, (err, valid) => {
+            if (err) {
+                resp.send({ result: "please provide valid token with header" })
+            } else {
+                next();
+            }
+        })
+    } else {
+        resp.send({ result: "please add token with header" })
     }
- 
-}
-
+}   
 app.listen(7000);
+          
